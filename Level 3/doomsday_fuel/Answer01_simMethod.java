@@ -1,4 +1,5 @@
 //Welcome to foobar version 53-10-g85713ac-beta (2016-09-28-19:53+0000)
+import java.util.Random;
 public class Answer {
     public static int[] answer(int[][] m) { 
 
@@ -19,47 +20,59 @@ public class Answer {
         
         int[] stateCounts = new int[stateNodes.length];
         
-        int currentState = 0;
-        int numSimulations = 7777777;
+        int currentState;
+        int depthLimit;
+        boolean success;
+        int numSimulations = 17777777;
+        double completeSims = 0;
+        Random rand = new Random();
         for(int i = 0; i < numSimulations; i++){
+            depthLimit = 10;
             currentState = 0;
+            success = true;
             while( !isTerminalState[currentState] ) {
-                currentState = stateNodes[currentState].nextState();
+                if( --depthLimit < 0 ) {
+                    success = false;
+                    break;
+                }
+                currentState = stateNodes[currentState].nextState(rand);
             }
-            stateCounts[ currentState ]++;
+            if( success ) {
+                stateCounts[ currentState ]++;
+                completeSims++;
+            }
         }
         
-        int resultSetHelper = 0;
-        int[] resultSet = new int[numTerminalStates + 1];
+        double factor;
+        int denom = 1;
+        int hsetIndex = 0;
+        int[][] helperSet = new int[numTerminalStates][2];
         for(int i = 0; i < isTerminalState.length; i++){
             if( isTerminalState[i] ) {
-                resultSet[resultSetHelper++] = stateCounts[i];
+                factor = ((double) stateCounts[i]) / (completeSims);
+                helperSet[hsetIndex] = FractionProcesser.GetFraction( factor );
+                denom = FractionProcesser.lcm(denom, helperSet[hsetIndex][1]);
+                hsetIndex++;
             }
         }
-        resultSet[resultSetHelper] = numSimulations;
-        int denom = 1;
-        int[][] helperSet = new int[resultSet.length-1][2];
+        
+        int multiple = 1;
+        int[] resultSet = new int[numTerminalStates + 1];
         for( int i = 0; i < resultSet.length-1; i++) { 
-            double factor = ((double) resultSet[i]) / ((double) resultSet[resultSet.length-1]);
-            factor = ( (factor * 100 ) % 100 ) / 100;
-            helperSet[i] = GetFraction( factor );
-            denom = lcm(denom, helperSet[i][1]);
+            multiple = denom / helperSet[i][1];
+            resultSet[i] = helperSet[i][0] * multiple;
         }
         resultSet[resultSet.length-1] = denom;
         
-        for( int i = 0; i < resultSet.length-1; i++) { 
-            int multiple = denom / helperSet[i][1];
-            resultSet[i] = helperSet[i][0] * multiple;
-        }
-        
-        
         return resultSet;
     }
+}
+class FractionProcesser{
     public static int gcm(int a, int b) {
         return b == 0 ? a : gcm(b, a % b);
     }
-    private static int lcm(int a, int b){
-        return a * (b / gcm(a, b));
+    public static int lcm(int a, int b){
+        return (a * b) / gcm(a, b);
     }
     public static int[] GetFraction(double input){
         double tolerance = 0.001;
@@ -97,8 +110,8 @@ class StateNode{
         setDenominator();
     } 
     
-    public int nextState() {
-        int rand = (int) (Math.random() * denominator);
+    public int nextState(Random random) {
+        int rand = random.nextInt(denominator);
         for( int i = 0; i < numerators.length; i++ ) {
             if( rand < numerators[i] ) {
                 return i;
