@@ -1,5 +1,3 @@
-//Welcome to foobar version 53-10-g85713ac-beta (2016-09-28-19:53+0000)
-public class i_love_lance_janice {
     /*
         I Love Lance & Janice
         =====================
@@ -32,17 +30,3 @@ public class i_love_lance_janice {
 
         Use verify [file] to test your solution and see how it does. When you are finished editing your code, use submit [file] to submit your answer. If your solution passes the test cases, it will be removed from your home folder.
     */
-    public static String answer(String s) { 
-
-        // Your code goes here.
-        StringBuilder sb = new StringBuilder();
-        for(char c : s.toCharArray()) {
-            if( c >= 'a' && c <= 'z' ) {
-                c = (char)((int)('z' - c + 'a')); 
-            }
-            sb.append(c);
-        }
-        
-        return sb.toString();
-    }
-}
